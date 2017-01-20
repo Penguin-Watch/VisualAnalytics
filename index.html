@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Penguin Lifelines | Data Portal</title>
+    <link href="assets/js/lib/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/js/lib/dc.min.css" rel="stylesheet">
+    <link href="assets/css/styles.css" rel="stylesheet">
+</head>
+<body>
+
+<section id="top">
+    <div class="container">
+        <div class="col-md-5">
+            <img src="assets/img/pl-portal-logo.svg">
+            <p>
+                We currently have 67 cameras all around the Antarctic Peninsula, the Falklands, and South Georgia!
+            </p>
+
+            <p>From this portal you see what data we collect and interact with it.</p>
+        </div>
+
+        <div class="col-md-7" align="center">
+            <img src="assets/img/antarctic-dark.svg" width="80%">
+        </div>
+    </div>
+</section>
+
+<section id="data">
+    <div class="container-fluid">
+
+        <div class="row-fluid">
+            <div id="visualizations" class="col-md-9">
+                <div class="row-fluid">
+
+                    <div class="col-md-12">
+                        <h4>Overview</h4>
+                        <p class="text-muted">Penguin Counts from Images with Temperature</p>
+                        <div id="overview-vis"></div>
+                    </div>
+
+
+                    <div class="col-md-6">
+                        <h4>Year Breakdown</h4>
+                        <div id="year-chart"></div>
+                    </div>
+
+
+                    <div class="col-md-6">
+                        <h4>Month Breakdown</h4>
+                        <div id="month-chart"></div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h4>Moon phases</h4>
+                        <div id="moon-chart"></div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div id="image-view" class="col-md-3">
+                <h4>Images</h4>
+                <div id="image-detail"></div>
+            </div>
+        </div>
+    </div>
+</section>
+<script src="assets/js/lib/d3.min.js"></script>
+<script src="assets/js/lib/d3-tip.js"></script>
+<script src="assets/js/lib/jquery.min.js"></script>
+<script src="assets/js/lib/crossfilter.min.js"></script>
+<script src="assets/js/lib/dc.min.js"></script>
+<script src="assets/js/data-portal.js"></script>
+
+<script type="text/javascript">
+    dataPortal.render('data/zooout merged.csv');
+</script>
+</body>
+</html>
