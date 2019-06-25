@@ -4,13 +4,13 @@
 
 var dataPortal = (function () {
 
-    var typeColors = d3.scale.ordinal().domain(["adult", "chick", "other"]).range(["#1abc9c", "#e74c3c", "#f39c12"]);
-    var generalColors = d3.scale.ordinal().range(["#2980b9"]);
-    var temperatureColors = d3.scale.ordinal().range(["#be1e2d"]);
+    var typeColors = d3.scaleOrdinal().domain(["adult", "chick", "other"]).range(["#1abc9c", "#e74c3c", "#f39c12"]);
+    var generalColors = d3.scaleOrdinal().range(["#2980b9"]);
+    var temperatureColors = d3.scaleOrdinal().range(["#be1e2d"]);
 
     var date_format = "%d %b %Y";
 
-    var formatDate = d3.time.format(date_format);
+    var formatDate = d3.timeFormat(date_format);
 
     var parseDate = function (d) {
         //2012-12-13 16:00:00
@@ -24,8 +24,8 @@ var dataPortal = (function () {
     var sortByDateAscending = function (a, b) {
 
         if (typeof a === 'string') {
-            var a = d3.time.format(date_format).parse(a);
-            var b = d3.time.format(date_format).parse(b);
+            var a = d3.timeParse(date_format)(a);
+            var b = d3.timeParse(date_format)(b);
             return a - b;
         } else {
             return a.datetime - b.datetime;
@@ -59,6 +59,13 @@ var dataPortal = (function () {
             return -d.value;
         });
     };
+
+    var getGroupExtent = function(group, variable) {
+        var _min = +group.bottom(1)[0][variable];
+        var _max = +group.top(1)[0][variable];
+
+        return [_min, _max];
+    }
 
 
     return {
@@ -145,8 +152,8 @@ var dataPortal = (function () {
                 }
             ];
 
-            var xScale = d3.scale.linear().domain([0, 100]).range([0, 500]);
-            var yScale = d3.scale.linear().domain([0, 100]).range([0, 500]);
+            var xScale = d3.scaleLinear().domain([0, 100]).range([0, 500]);
+            var yScale = d3.scaleLinear().domain([0, 100]).range([0, 500]);
 
             var locationGroup = svg.selectAll('g.location')
                 .data(locations)
@@ -157,7 +164,7 @@ var dataPortal = (function () {
                     return 'translate(' + xScale(d.long) + ',' + yScale(d.lat) + ')';
                 });
 
-            var rScale = d3.scale.linear().domain([0, 100]).range([0, 13]);
+            var rScale = d3.scaleLinear().domain([0, 100]).range([0, 13]);
 
             var adultIndicator = locationGroup.selectAll('g.adultGroup').data(function (d) {
                 return d.adults;
@@ -194,12 +201,13 @@ var dataPortal = (function () {
 
         render: function (url, options) {
 
-            var formatDateAsYear = d3.time.format("%Y");
-            var formatDateAsMonth = d3.time.format("%b");
-            var formatDateAsHour = d3.time.format("%H");
-            var formatDateAsHourMinute = d3.time.format("%H:%M");
 
-            d3.csv(url, function (data) {
+            var formatDateAsYear = d3.timeFormat("%Y");
+            var formatDateAsMonth = d3.timeFormat("%b");
+            var formatDateAsHour = d3.timeFormat("%H");
+            var formatDateAsHourMinute = d3.timeFormat("%H:%M");
+
+            d3.csv(url).then(function (data) {
 
                 process_data(data);
 
@@ -222,45 +230,60 @@ var dataPortal = (function () {
                     }),
 
                     byTemperature = cr_data.dimension(function (d) {
-                        return d.tempf;
+                        return +d.tempc;
                     }),
 
-                    byMoon = cr_data.dimension(function (d) {
-                        return d.moon;
-                    }),
-
-                    byAdult = cr_data.dimension(function (d) {
-                        return d.nadults;
+                    adultDistribution = cr_data.dimension(function (d) {
+                        return +d.nadults;
                     });
 
-                var by_date_count_group = byDate.group(),
+                    chickDistribution = cr_data.dimension(function (d) {
+                        return +d.nchicks;
+                    });
 
-                    adult_date_group = byDate.group().reduceSum(function (d) {
-                        return +d.nadults;
-                    }),
-                    temperature_date_group = byDate.group().reduceSum(function (d) {
-                        return +d.tempf;
-                    }),
+                    eggDistribution = cr_data.dimension(function (d) {
+                        return +d.neggs;
+                    });
 
-                    byHourGroup = byHour.group().reduceSum(function (d) {
-                        return +d.nadults;
-                    }),
-
-                    byYearGroup = byYear.group().reduceSum(function (d) {
-                        return +d.nadults;
-                    }),
-                    byMonthGroup = byMonth.group().reduceSum(function (d) {
-                        return +d.nadults;
-                    }),
-                    byMoonGroup = byMoon.group().reduceSum(function (d) {
+                    var adultDateGroup = byDate.group().reduceSum(function (d) {
                         return +d.nadults;
                     }),
 
-                    byTemperatureGroup = byTemperature.group().reduceSum(function (d) {
+                    chickDateGroup = byDate.group().reduceSum(function (d) {
+                        return +d.nchicks;
+                    }),
+
+                    eggDateGroup = byDate.group().reduceSum(function (d) {
+                        return +d.neggs;
+                    }),
+
+//                    byHourGroup = byHour.group().reduceSum(function (d) {
+//                        return +d.nadults;
+//                    }),
+//
+//                    byYearGroup = byYear.group().reduceSum(function (d) {
+//                        return +d.nadults + +d.nchicks + +d.neggs;
+//                    }),
+//
+//                    byMonthGroup = byMonth.group().reduceSum(function (d) {
+//                        return +d.nadults  + +d.nchicks + +d.neggs;
+//                    }),
+
+                    adultTemperatureGroup = byTemperature.group().reduceSum(function (d) {
                         return +d.nadults;
                     }),
 
-                    byAdultGroup = byAdult.group();
+                    chickTemperatureGroup = byTemperature.group().reduceSum(function (d) {
+                        return +d.nchicks;
+                    }),
+
+                    eggTemperatureGroup = byTemperature.group().reduceSum(function (d) {
+                        return +d.neggs;
+                    }),
+
+                    adultDistributionGroup = adultDistribution.group(),
+                    chickDistributionGroup = chickDistribution.group(),
+                    eggDistributionGroup = eggDistribution.group();
 
 
                 var minDate = new Date(byDate.bottom(1)[0].datetime);
@@ -269,91 +292,143 @@ var dataPortal = (function () {
                 minDate.setDate(minDate.getDate() - 1);
                 maxDate.setDate(maxDate.getDate() + 1);
 
-                var rptLine = dc.compositeChart(document.getElementById("overview-vis"));
 
-                var fullWidth = calculate_vis_width(".full-width");
-                console.log(fullWidth);
+//                createRowChart("#year-chart", byYear, byYearGroup, generalColors, calculate_vis_width("#year-chart"));
+//                createRowChart("#month-chart", byMonth, byMonthGroup, generalColors, calculate_vis_width(("#month-chart")));
 
-                rptLine
-                    .width(fullWidth)
-                    .height(250)
-                    .dimension(byDate)
-                    .x(d3.time.scale().domain([minDate, maxDate]))
-                    .xUnits(d3.time.days)
-                    .xAxisLabel('Date')
-                    .yAxisLabel('# Adult Penguins')
+                console.log(calculate_vis_width("#adults-time"));
+                var col6Width = calculate_vis_width(".col-md-6");
+                var col3Width = calculate_vis_width(".col-md-3");
+
+                dc.barChart("#adults-time")
+                    .width(col6Width)
+                    .height(265)
                     .elasticY(true)
-                    .renderHorizontalGridLines(true)
-                    .renderVerticalGridLines(true)
-                    .compose([
-                        dc.lineChart(rptLine)
-                            .dimension(byDate)
-                            .xUnits(d3.time.hours)
-                            .group(temperature_date_group, 'Temperature (F)')
-                            .colors(temperatureColors),
-
-                        dc.barChart(rptLine)
-                            .dimension(byDate)
-                            .group(adult_date_group, 'Adult Penguins')
-                            .xUnits(d3.time.hours)
-                            .colors(generalColors)
-
-                    ]);
-
-                rptLine.legend(dc.legend().x(50).y(20).itemHeight(13).gap(5))
-                    .brushOn(true);
-
-
-                createRowChart("#year-chart", byYear, byYearGroup, generalColors, calculate_vis_width("#year-chart"));
-                createRowChart("#month-chart", byMonth, byMonthGroup, generalColors, calculate_vis_width(("#month-chart")));
-                createRowChart("#moon-chart", byMoon, byMoonGroup, generalColors, calculate_vis_width("#moon-chart"));
-
-
-                var hourChartWidth = calculate_vis_width("#hour-chart");
-                dc.barChart("#hour-chart")
-                    .width(hourChartWidth)
-                    .height(250)
-                    .dimension(byHour)
-                    .group(byHourGroup)
-                    .x(d3.scale.linear().domain([0, 23]))
-                    .xAxisLabel('Hour of Day')
-                    .yAxisLabel('# Penguins')
+                    .dimension(byDate)
+                    .x(d3.scaleTime().domain([minDate, maxDate]))
+                    .xUnits(d3.timeDays)
+                    .group(adultDateGroup, 'Adults')
+                    .yAxisLabel('Number of Adults')
+                    .xAxisLabel('Date')
                     .colors(generalColors);
 
-
-                dc.barChart("#adults-chart")
-                    .width(hourChartWidth)
+                dc.barChart("#adults-distribution")
+                    .width(col3Width)
                     .height(265)
-                    .dimension(byAdult)
-                    .x(d3.scale.linear().domain([0, 40]))
-                    .group(byAdultGroup, 'Adults')
+                    .elasticY(true)
+                    .dimension(adultDistribution)
+                    .x(d3.scaleLinear().domain(getGroupExtent(adultDistribution, 'nadults')))
+                    .group(adultDistributionGroup, 'Adults')
                     .yAxisLabel('Number of Images')
-                    .xAxisLabel('# Penguins')
+                    .xAxisLabel('# Adult Penguins')
+                    .colors(generalColors);
+//
+                dc.barChart("#adults-temperature")
+                    .width(col3Width)
+                    .height(265)
+                    .elasticY(true)
+                    .dimension(byTemperature)
+                    .x(d3.scaleLinear().domain(getGroupExtent(byTemperature, 'tempc')))
+                    .group(adultTemperatureGroup)
+                    .xAxisLabel('Temperature')
+                    .yAxisLabel('# Adults')
+                    .colors(temperatureColors);
+
+                //Chicks
+                dc.barChart("#chicks-time")
+                    .width(col6Width)
+                    .height(265)
+                    .elasticY(true)
+                    .dimension(byDate)
+                    .x(d3.scaleTime().domain([minDate, maxDate]))
+                    .xUnits(d3.timeDays)
+                    .group(chickDateGroup, 'Chicks')
+                    .yAxisLabel('Number of Chicks')
+                    .xAxisLabel('# Penguin Chicks')
                     .colors(generalColors);
 
-
-                dc.barChart("#temperature-chart")
-                    .width(hourChartWidth)
+                dc.barChart("#chicks-distribution")
+                    .width(col3Width)
                     .height(265)
+                    .elasticY(true)
+                    .dimension(chickDistribution)
+                    .x(d3.scaleLinear().domain(getGroupExtent(chickDistribution, 'nchicks')))
+                    .group(chickDistributionGroup, 'Adults')
+                    .yAxisLabel('Number of Images')
+                    .xAxisLabel('# Penguin Chicks')
+                    .colors(generalColors);
+
+                dc.barChart("#chicks-temperature")
+                    .width(col3Width)
+                    .height(265)
+                    .elasticY(true)
                     .dimension(byTemperature)
-                    .x(d3.scale.linear().domain([10, 66]))
-                    .group(byTemperatureGroup)
+                    .x(d3.scaleLinear().domain(getGroupExtent(byTemperature, 'tempc')))
+                    .group(chickTemperatureGroup)
                     .xAxisLabel('Temperature')
-                    .yAxisLabel('# Penguins')
+                    .yAxisLabel('Number of Images')
                     .colors(temperatureColors);
+
+                //Eggs
+                dc.barChart("#eggs-time")
+                    .width(col6Width)
+                    .height(265)
+                    .elasticY(true)
+                    .dimension(byDate)
+                    .x(d3.scaleTime().domain([minDate, maxDate]))
+                    .xUnits(d3.timeDays)
+                    .group(eggDateGroup, 'Eggs')
+                    .yAxisLabel('Number of Images')
+                    .xAxisLabel('# Penguin Eggs')
+                    .colors(generalColors);
+
+                dc.barChart("#eggs-distribution")
+                    .width(col3Width)
+                    .height(265)
+                    .elasticY(true)
+                    .dimension(eggDistribution)
+                    .x(d3.scaleLinear().domain(getGroupExtent(eggDistribution, 'neggs')))
+                    .group(eggDistributionGroup, 'Eggs')
+                    .yAxisLabel('Number of Images')
+                    .xAxisLabel('# Penguin Eggs')
+                    .colors(generalColors);
+
+                dc.barChart("#eggs-temperature")
+                    .width(col3Width)
+                    .height(265)
+                    .elasticY(true)
+                    .dimension(byTemperature)
+                    .x(d3.scaleLinear().domain(getGroupExtent(byTemperature, 'tempc')))
+                    .group(eggTemperatureGroup)
+                    .xAxisLabel('Temperature')
+                    .yAxisLabel('Number of Images')
+                    .colors(temperatureColors);
+//                    var hourChartWidth = calculate_vis_width("#hour-chart");
+//                dc.barChart("#hour-chart")
+//                    .width(hourChartWidth)
+//                    .height(250)
+//                    .elasticY(true)
+//                    .dimension(byHour)
+//                    .group(byHourGroup)
+//                    .x(d3.scale.linear().domain([0, 23]))
+//                    .xAxisLabel('Hour of Day')
+//                    .yAxisLabel('# Penguins')
+//                    .colors(generalColors);
 
                 var detailTable = dc.dataTable('#image-detail');
                 detailTable.dimension(byDate)
-                    .group(function (d) {
+                    .section(function (d) {
                         return formatDate(d.datetime);
                     })
                     .columns([
                         function (d) {
-                            return '<div class="row-fluid"><div class="col-md-7"> <img src="' + d.stablelink + '" alt="' + d.plid + '" width="100%"></div>' +
+                            return '<div class="row-fluid"><div class="col-md-7"> <img src="' + d.URL + '" alt="' + d.imageid + '" width="100%"></div>' +
                                 '<div class="col-md-5">' +
                                 '<p class="text-muted"<span>' + formatDateAsHourMinute(d.datetime) + '</span><br/>' +
-                                '<span>' + d.tempf + ' F</span><br/>' +
-                                '<span>' + d.nadults + ' penguins present</span></p></div></div>' +
+                                '<span>' + d.tempc + ' &#186; Celcius</span><br/>' +
+                                '<span>' + d.nadults + ' adults</span><br/>' +
+                                '<span>' + d.nchicks + ' chicks</span><br/>' +
+                                '<span>' + d.neggs + ' eggs</span></p></div></div>' +
                                 '<div class="clearfix"></div> <br/>';
                         }
                     ]).sortBy(function (d) {

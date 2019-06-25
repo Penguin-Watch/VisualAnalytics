@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Penguin Lifelines | Data Portal</title>
     <link href="assets/js/lib/bootstrap.min.css" rel="stylesheet">
-    <link href="assets/js/lib/dc.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dc/3.0.12/dc.min.css" />
     <link href="assets/css/styles.css" rel="stylesheet">
 </head>
 <body>
@@ -14,7 +14,8 @@
         <div class="col-md-5">
             <img src="assets/img/pl-portal-logo.svg">
             <p>
-                We currently have 100 cameras all around the Antarctic Peninsula, Argentina, the Falklands, and South Georgia!
+                We currently have 100 cameras all around the Antarctic Peninsula, Argentina, the Falklands, and South
+                Georgia!
             </p>
 
             <p>From this portal you see what data we collect and interact with it.</p>
@@ -31,64 +32,108 @@
 
         <div class="row-fluid">
             <div id="visualizations" class="col-md-9">
+
+                <!--Adults-->
                 <div class="row-fluid">
-
-                    <div class="col-md-12 full-width">
-                        <h4>Overview</h4>
-                        <p class="text-muted">Penguin Counts from Images with Temperature</p>
-                        <div id="overview-vis"></div>
+                    <div class="col-md-6">
+                        <h4>Adults across time</h4>
+                        <p class="text-muted">Adult Counts</p>
+                        <div id="adults-time"></div>
                     </div>
 
-                    <div class="col-md-4">
-                        <h4>Year Breakdown</h4>
-                        <div id="year-chart"></div>
+                    <div class="col-md-3">
+                        <h4>Adult Distribution</h4>
+                        <p class="text-muted">Distribution of Adult Penguins.</p>
+                        <div id="adults-distribution"></div>
                     </div>
 
-                    <div class="col-md-4">
-                        <h4>Month Breakdown</h4>
-                        <div id="month-chart"></div>
+                    <div class="col-md-3">
+                        <h4>Adults by Temperature</h4>
+                        <p class="text-muted">Number of Adults observed at various temperatures.</p>
+                        <div id="adults-temperature"></div>
+                    </div>
+                </div>
+
+                <!--Chicks-->
+                <div class="row-fluid">
+                    <div class="col-md-6">
+                        <h4>Chicks over time</h4>
+                        <p class="text-muted">Penguin Counts</p>
+                        <div id="chicks-time"></div>
                     </div>
 
-                    <div class="col-md-4">
-                        <h4>Hour Breakdown</h4>
-                        <div id="hour-chart"></div>
+                    <div class="col-md-3">
+                        <h4>Chick Distribution</h4>
+                        <p class="text-muted">Chick Counts</p>
+                        <div id="chicks-distribution"></div>
                     </div>
 
-                    <div class="col-md-4">
-                        <h4>Penguins</h4>
-                        <div id="adults-chart"></div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <h4>Moon phases</h4>
-                        <div id="moon-chart"></div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <h4>Temperature</h4>
-                        <div id="temperature-chart"></div>
+                    <div class="col-md-3">
+                        <h4>Chicks by Temperature</h4>
+                        <p class="text-muted">Chick Counts</p>
+                        <div id="chicks-temperature"></div>
                     </div>
 
 
                 </div>
-            </div>
+                <!--Eggs-->
+                <div class="row-fluid">
+                    <div class="col-md-6">
+                        <h4>Eggs over time</h4>
+                        <div id="eggs-time"></div>
+                    </div>
 
-            <div id="image-view" class="col-md-3">
-                <h4>Images</h4>
-                <div id="image-detail"></div>
+                    <div class="col-md-3">
+                        <h4>Egg Distribution</h4>
+                        <div id="eggs-distribution"></div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <h4>Eggs by Temperature</h4>
+                        <div id="eggs-temperature"></div>
+                    </div>
+                </div>
+
+
+                <!--<div class="col-md-4">-->
+                <!--<h4>Penguins</h4>-->
+                <!--<div id="adults-chart"></div>-->
+                <!--</div>-->
+
+                <!--<div class="col-md-4">-->
+                <!--<h4>Moon phases</h4>-->
+                <!--<div id="moon-chart"></div>-->
+                <!--</div>-->
+
+                <!--<div class="col-md-4">-->
+                <!--<h4>Temperature</h4>-->
+                <!--<div id="temperature-chart"></div>-->
+                <!--</div>-->
+
+
             </div>
         </div>
+
+        <div id="image-view" class="col-md-3">
+            <h4>Images</h4>
+            <div id="image-detail"></div>
+        </div>
+    </div>
     </div>
 </section>
-<script src="assets/js/lib/d3.min.js"></script>
-<script src="assets/js/lib/d3-tip.js"></script>
-<script src="assets/js/lib/jquery.min.js"></script>
-<script src="assets/js/lib/crossfilter.min.js"></script>
-<script src="assets/js/lib/dc.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.min.js"></script>\
+<script src="//cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/dc/3.0.12/dc.min.js"></script>
+<script src='{% static "penguinwatch_dataexploration/js/data-portal.js"%}'></script>
 <script src="assets/js/data-portal.js"></script>
 <script type="text/javascript">
-    dataPortal.render('data/zooout merged.csv');
+    dataPortal.render('data/SPIGa_narwhal.csv');
     dataPortal.renderTimeSeriesOverMap('#time-series')
+
+
+
+
+
 </script>
 </body>
 </html>
